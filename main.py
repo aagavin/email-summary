@@ -39,11 +39,11 @@ for messageId in messagesIds:
         body = msg.get_payload()[0].get_payload()
     unread_email \
         += 'From:' + msg.get_all('FROM')[0] + '\n\n' \
-           + body[:100] + '...' + '\n\n------------------------------------------------------\n\n'
+           + str(body[:100]) + '...' + '\n\n------------------------------------------------------\n\n'
 
 print(unread_email)
 
-client.messages.create(to= os.environ['TO_NUMBER'],  from_=os.environ['FROM_NUMBER'], body=unread_email)
+client.messages.create(to=os.environ['TO_NUMBER'],  from_=os.environ['FROM_NUMBER'], body=unread_email)
 
 
 logout_email()
