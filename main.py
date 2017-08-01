@@ -18,11 +18,12 @@ imap.select(readonly=1)
 def logout_email():
     imap.close()
     imap.logout()
+    exit(0)
 
 
 status, response = imap.uid('search', '(UNSEEN)')
 
-if status != 'OK':
+if status != 'OK' or response[0] == b'':
     logout_email()
 
 messagesIds = response[0].decode("utf-8").split(' ')
