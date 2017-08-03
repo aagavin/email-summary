@@ -1,6 +1,9 @@
 import base64
 import email
-from objects import TwillioSettings, EmailSettings
+from objects import TwillioSettings, EmailSettings, SentMessageIds
+
+smids = SentMessageIds()
+
 
 tw = TwillioSettings()
 em = EmailSettings()
