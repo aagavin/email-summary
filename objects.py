@@ -40,8 +40,9 @@ class SentMessageIds:
         try:
             with open('data.pickle', 'rb') as f:
                 self.data = pickle.load(f)
-            #TODO: Check if current date more than a day diffrence than last_checked_date
-            #if self.data['last_checked_date'] > (datetime.date - datetime.datetime.y)
+            time_delta = datetime.datetime.now() - datetime.timedelta(weeks=1)
+            if self.data['last_checked_date'] > time_delta: # TODO CHECK THIS
+                pass
         except FileNotFoundError:
             self.data = {
                 'last_checked_date': datetime.datetime.now(),
