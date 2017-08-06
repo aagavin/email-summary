@@ -50,7 +50,11 @@ class SentMessageIds:
             }
 
     def add_message_id(self, message_id: str):
-        self.data['message_ids'].update(message_id)
+        self.data['message_ids'].add(message_id)
 
     def get_message_ids(self) -> set:
         return self.data['message_ids']
+
+    def save_sent_messages(self):
+        with open('data.pickle', 'wb') as f:
+            pickle.dump(self.data, f, pickle.HIGHEST_PROTOCOL)
