@@ -42,7 +42,7 @@ class SentMessageIds:
                 self.data = pickle.load(f)
             time_delta = datetime.datetime.now() - datetime.timedelta(weeks=1)
             if self.data['last_checked_date'] > time_delta: # TODO CHECK THIS
-                pass
+                self.data['message_ids'] = set()
         except FileNotFoundError:
             self.data = {
                 'last_checked_date': datetime.datetime.now(),

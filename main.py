@@ -35,7 +35,7 @@ for messageId in messagesIds:
 
 print(unread_email)
 
-# tw.client.messages.create(to=tw.to_number, from_=tw.from_number, body=unread_email)
+tw.client.messages.create(to=tw.to_number, from_=tw.from_number, body=unread_email)
 
 
 smids.save_sent_messages()
