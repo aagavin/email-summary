@@ -1,9 +1,11 @@
 import base64
 import email
-from objects import TwillioSettings, EmailSettings
+from objects import TwillioSettings, EmailSettings, SentMessageIds
+
 
 tw = TwillioSettings()
 em = EmailSettings()
+smids = SentMessageIds()
 
 em.login()
 
@@ -18,6 +20,9 @@ unread_email = ''
 
 for messageId in messagesIds:
     print('getting message for: ' + messageId)
+    if messageId in smids.data['message_ids']:
+        continue
+    smids.add_message_id(messageId)
     sts, res = em.get_message(messageId)
     msg = email.message_from_bytes(res[0][1])
     if msg.get_payload()[0]['Content-Transfer-Encoding'] == 'base64':
@@ -33,4 +38,5 @@ print(unread_email)
 tw.client.messages.create(to=tw.to_number, from_=tw.from_number, body=unread_email)
 
 
+smids.save_sent_messages()
 em.logout()

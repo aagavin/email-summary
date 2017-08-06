@@ -1,5 +1,7 @@
 import os
+import datetime
 from twilio.rest import Client
+import pickle
 import imaplib
 
 
@@ -30,3 +32,29 @@ class EmailSettings:
 
     def get_message(self, message_id: str):
         return self.imap.uid('fetch', str(message_id), '(RFC822)')
+
+
+class SentMessageIds:
+    def __init__(self):
+        self.data = {}
+        try:
+            with open('data.pickle', 'rb') as f:
+                self.data = pickle.load(f)
+            time_delta = datetime.datetime.now() - datetime.timedelta(weeks=1)
+            if self.data['last_checked_date'] > time_delta: # TODO CHECK THIS
+                self.data['message_ids'] = set()
+        except FileNotFoundError:
+            self.data = {
+                'last_checked_date': datetime.datetime.now(),
+                'message_ids': set()
+            }
+
+    def add_message_id(self, message_id: str):
+        self.data['message_ids'].add(message_id)
+
+    def get_message_ids(self) -> set:
+        return self.data['message_ids']
+
+    def save_sent_messages(self):
+        with open('data.pickle', 'wb') as f:
+            pickle.dump(self.data, f, pickle.HIGHEST_PROTOCOL)
