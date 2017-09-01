@@ -1,8 +1,10 @@
 import os
 import datetime
-from twilio.rest import Client
-import pickle
 import imaplib
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+from twilio.rest import Client
 
 
 class TwillioSettings:
@@ -36,18 +38,41 @@ class EmailSettings:
 
 class SentMessageIds:
     def __init__(self):
-        self.data = {}
-        try:
-            with open('data.pickle', 'rb') as f:
-                self.data = pickle.load(f)
-            time_delta = datetime.datetime.now() - datetime.timedelta(weeks=1)
-            if self.data['last_checked_date'] > time_delta: # TODO CHECK THIS
-                self.data['message_ids'] = set()
-        except FileNotFoundError:
-            self.data = {
-                'last_checked_date': datetime.datetime.now(),
-                'message_ids': set()
-            }
+        cred = credentials.Certificate({
+            "type": os.getenv('type'),
+            "project_id": os.getenv('project_id'),
+            "private_key_id": os.getenv('private_key_id'),
+            "private_key": os.getenv('private_key').replace('\\n', '\n'),
+            "client_email": os.getenv('client_email'),
+            "client_id": os.getenv('client_id'),
+            "auth_uri": os.getenv('auth_uri'),
+            "token_uri": os.getenv('token_uri'),
+            "auth_provider_x509_cert_url": os.getenv('auth_provider_x509_cert_url'),
+            "client_x509_cert_url": os.getenv('client_x509_cert_url')
+        })
+
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': os.getenv('databaseURL')
+        })
+
+        self.data = self.create_new_dict()
+        self.ref = db.reference('/')
+        if self.ref.get() and 'message_ids' in self.ref.get():
+            d: dict = self.ref.get()
+            db_date = datetime.datetime.strptime(d['last_update'], '%Y-%m-%d %H:%M:%S.%f')
+            if abs((self.data['last_update']-db_date).days) > 1:
+                self.data = self.create_new_dict()
+            else:
+                self.data['message_ids'] = d['message_ids']
+        else:
+            self.save_sent_messages()
+
+    @staticmethod
+    def create_new_dict() -> dict:
+        return {
+            'message_ids': set(),
+            'last_update': datetime.datetime.now()
+        }
 
     def add_message_id(self, message_id: str):
         self.data['message_ids'].add(message_id)
@@ -56,5 +81,7 @@ class SentMessageIds:
         return self.data['message_ids']
 
     def save_sent_messages(self):
-        with open('data.pickle', 'wb') as f:
-            pickle.dump(self.data, f, pickle.HIGHEST_PROTOCOL)
+        self.ref.set({
+            'message_ids': list(self.data['message_ids']),
+            'last_update': str(self.data['last_update'])
+        })
