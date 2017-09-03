@@ -63,7 +63,7 @@ class SentMessageIds:
             if abs((self.data['last_update']-db_date).days) > 1:
                 self.data = self.create_new_dict()
             else:
-                self.data['message_ids'] = d['message_ids']
+                self.data['message_ids'] = set(d['message_ids'])
         else:
             self.save_sent_messages()
 
@@ -74,7 +74,7 @@ class SentMessageIds:
             'last_update': datetime.datetime.now()
         }
 
-    def add_message_id(self, message_id: str):
+    def add_message_id(self, message_id: str) -> None:
         self.data['message_ids'].add(message_id)
 
     def get_message_ids(self) -> set:
